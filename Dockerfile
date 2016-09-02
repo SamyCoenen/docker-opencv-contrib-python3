@@ -1,6 +1,6 @@
 FROM python:3.5
 
-MAINTAINER Yusuke Nemoto <stooner.hoe@gmail.com>
+MAINTAINER Samy Coenen <samy.coenen@gmail.com>
 
 RUN apt-get update && apt-get install -y build-essential \
     cmake \
@@ -25,10 +25,12 @@ RUN apt-get update && apt-get install -y build-essential \
     tesseract-ocr \
     tesseract-ocr-dev \
     libgtk2.0-dev \
+    openssh-server \
     && apt-get -y clean all \
     && rm -rf /var/lib/apt/lists/*
-
-RUN pip install numpy
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+RUN sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
+RUN pip install numpy livestreamer pillow urllib3 pytesseract
 
 WORKDIR /
 
@@ -43,9 +45,9 @@ RUN wget http://www.leptonica.com/source/leptonica-1.73.tar.gz \
         && tar xvf leptonica-1.73.tar.gz \
         && cd leptonica-1.73 \
         && ./configure \
-        && make \
+        && make -j \
         && make install
-# make and install opencv
+# make and install opencv (multicore)
 RUN cd /opencv-3.1.0/cmake_binary \
         && Tesseract_INCLUDE_DIR=/usr/include/tesseract \
         && Tesseract_LIBRARY=/usr/lib \
@@ -68,12 +70,12 @@ RUN cd /opencv-3.1.0/cmake_binary \
 	  -DPYTHON_EXECUTABLE=$(which python3.5) \
 	  -DPYTHON_INCLUDE_DIR=$(python3.5 -c "from distutils.sysconfig import get_python_inc; print(get_python_inc())") \
 	  -DPYTHON_PACKAGES_PATH=$(python3.5 -c "from distutils.sysconfig import get_python_lib; print(get_python_lib())") .. \
-	&& make install \
+	&& make install -j \
 	&& rm /opencv.zip \
 	&& rm /opencv_contrib.zip \
 	&& rm -r /opencv-3.1.0 \
 	&& rm -r /opencv_contrib-3.1.0 \
         && rm -r /leptonica-1.73.tar.gz
 
-# add jpn trained data
-RUN curl -o /usr/share/tesseract-ocr/tessdata/jpn.traineddata https://github.com/tesseract-ocr/tessdata/raw/master/jpn.traineddata
+# add eng trained data
+RUN curl -o /usr/share/tesseract-ocr/tessdata/eng.traineddata https://github.com/tesseract-ocr/tessdata/raw/master/eng.traineddata
