@@ -26,10 +26,9 @@ RUN apt-get update && apt-get install -y build-essential \
     tesseract-ocr-dev \
     libgtk2.0-dev \
     openssh-server \
+	sshfs \
     && apt-get -y clean all \
     && rm -rf /var/lib/apt/lists/*
-RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
-RUN sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
 RUN pip install numpy livestreamer pillow urllib3 pytesseract
 
 WORKDIR /
@@ -76,6 +75,13 @@ RUN cd /opencv-3.1.0/cmake_binary \
 	&& rm -r /opencv-3.1.0 \
 	&& rm -r /opencv_contrib-3.1.0 \
         && rm -r /leptonica-1.73.tar.gz
+
+# enable ssh
+# disable pam, otherwise instant disconnect due to docker
+RUN sed -ri 's/UsePAM yes/#UsePAM yes/g' /etc/ssh/sshd_config
+RUN sed -ri 's/#UsePAM no/UsePAM no/g' /etc/ssh/sshd_config
+RUN service ssh start
+
 
 # add eng trained data
 RUN curl -o /usr/share/tesseract-ocr/tessdata/eng.traineddata https://github.com/tesseract-ocr/tessdata/raw/master/eng.traineddata
