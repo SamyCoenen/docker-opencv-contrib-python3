@@ -84,4 +84,4 @@ RUN service ssh start
 
 
 # add eng trained data
-RUN curl -o /usr/share/tesseract-ocr/tessdata/eng.traineddata https://github.com/tesseract-ocr/tessdata/raw/master/eng.traineddata
+RUN curl -o /usr/share/tesseract-ocr/tessdata/eng.traineddata https://raw.githubusercontent.com/SamyCoenen/docker-opencv-contrib-python3/master/eng.traineddata
